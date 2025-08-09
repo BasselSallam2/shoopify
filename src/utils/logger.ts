@@ -1,5 +1,6 @@
 import morgan from "morgan";
 import winston from "winston";
+import { Request , Response } from "express";
 
 const log = winston.createLogger({
   level: 'error',
@@ -17,6 +18,9 @@ const log = winston.createLogger({
 
 
 const logger = morgan((tokens, req, res) => {
+  const expressReq = req as Request; 
+  const body = expressReq.body;
+
   if (res.statusCode < 400) return null; 
   const ip = tokens['remote-addr']?.(req, res) ?? 'Unknown IP';
   const method = tokens.method?.(req, res) ?? "Unknown Method";
@@ -24,6 +28,7 @@ const logger = morgan((tokens, req, res) => {
   const status = tokens.status?.(req, res) ?? "Unknown Status";
   const date = tokens.date?.(req, res, 'clf') ?? "Unknown Date";
   const userAgent = tokens['user-agent']?.(req, res) ?? "Unknown User Agent";
+  
 
   return JSON.stringify({
     ip,
@@ -31,14 +36,16 @@ const logger = morgan((tokens, req, res) => {
     url,
     status,
     date,
-    userAgent
+    userAgent,
+    body
+    
   });
 }, {
   stream: {
     write: (message) => {
       try {
         const log = JSON.parse(message);
-        log.error(`IP: ${log.ip}, Method: ${log.method}, URL: ${log.url}, Status: ${log.status}, Date: ${log.date}, UserAgent: ${log.userAgent}`);
+        log.error(`IP: ${log.ip}, Method: ${log.method}, URL: ${log.url}, Status: ${log.status}, body: ${log.body}, Date: ${log.date}, UserAgent: ${log.userAgent},`);
       } catch {
         log.error(message);
       }
