@@ -3,8 +3,8 @@ import cors from "cors";
 import helmet from "helmet";
 import express from "express";
 
-import userRouter from "../modules/user.route.js";
-import logger  from "./logger.js";
+import appRoutes from "@utils/routes.js";
+import logger  from "@utils/logger.js";
 
  function Appuse(app: Express) {
 
@@ -14,7 +14,7 @@ import logger  from "./logger.js";
   app.use(express.urlencoded({ extended: true }));
   app.use(logger);
 
-  app.use("/api/user", userRouter);
+  app.use("/api", appRoutes);
 
   app.get('/error', (req, res) => {
   res.status(500).send('Server error!');

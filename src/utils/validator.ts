@@ -1,8 +1,8 @@
 import { body, ValidationChain } from 'express-validator';
 
 class Validator {
-  static text(field: string, minLength: number = 3, maxLength?: number): ValidationChain {
-    let chain = body(field)
+  static text(field: any, minLength: number = 3, maxLength?: number): ValidationChain {
+    let chain = field
       .notEmpty().withMessage(`${field} is required`)
       .isString().withMessage(`${field} must be a string`)
       .isLength({ min: minLength }).withMessage(`${field} must be at least ${minLength} characters long`);

@@ -15,6 +15,9 @@
     "@types/node": "^24.2.1",
     "eslint": "^9.32.0",
     "husky": "^9.1.7",
+    "nodemon": "^3.1.10",
+    "tsconfig-paths": "^4.2.0",
+    "tsup": "^8.5.0",
     "typescript": "^5.9.2"
   },
   "peerDependencies": {
@@ -24,20 +27,36 @@
     "prepare": "bunx husky install",
     "lint": "eslint src --ext .ts",
     "lint:fix": "eslint src --ext .ts --fix",
-    "dev": "bun src/server.ts",
-    "build": "bunx tsc",
-    "start": "node dist/server.js"
+    "build": "tsup",
+    "watch:build": "tsup --watch",
+    "dev": "nodemon --watch dist --exec \"bun run dist/server.js\"",
+    "start": "bun run dist/server.js"
   },
   "dependencies": {
     "bcryptjs": "^3.0.2",
     "cors": "^2.8.5",
+    "crypto": "^1.0.1",
     "dotenv": "^17.2.1",
     "express": "^4.21.2",
+    "express-async-handler": "^1.2.0",
     "express-validator": "^7.2.1",
     "helmet": "^8.1.0",
+    "module-alias": "^2.2.3",
     "mongoose": "^8.17.1",
     "morgan": "^1.10.1",
+    "redis": "^5.8.0",
     "sanitize": "^2.1.2",
     "winston": "^3.17.0"
+  },
+  "_moduleAliases": {
+    "@": "dist",
+    "@config": "dist/config",
+    "@middlewares": "dist/middlewares",
+    "@modules": "dist/modules",
+    "@shared": "dist/shared",
+    "@types": "dist/types",
+    "@utils": "dist/utils",
+    "@logs": "dist/LOGS",
+    "@cash": "dist/cash"
   }
 }

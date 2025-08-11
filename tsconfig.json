@@ -11,6 +11,19 @@
     "outDir": "dist",
     "moduleResolution": "nodenext",
 
+    "baseUrl": "./src",
+    "paths": {
+       "@/*": ["*"],
+      "@config/*": ["config/*"],
+      "@middlewares/*": ["middlewares/*"],
+      "@modules/*": ["modules/*"],
+      "@shared/*": ["shared/*"],
+      "@types/*": ["types/*"],
+      "@utils/*": ["utils/*"],
+      "@logs/*": ["LOGS/*"],
+      "@cash/*": ["cash/*"]
+    },
+
     "strict": true,
     "skipLibCheck": true,
     "noFallthroughCasesInSwitch": true,
