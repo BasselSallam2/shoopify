@@ -1,12 +1,12 @@
 import { Query } from "mongoose";
 
-type paginateOBJ = {
+ type paginateOBJ = {
   currentPage: number;
+  numberOfPages: number;
+  hasNextPage: boolean;
+  hasPrevPage: boolean;
   limit: number;
   totalDocs: number;
-  numberOfPages: number;
-  nextPage?: number;
-  prevPage?: number;
 };
 
 class ApiFeature {
@@ -20,12 +20,12 @@ class ApiFeature {
   }
 
   public paginationResult: paginateOBJ = {
-    currentPage: 0,
-    limit: 0,
-    totalDocs: 0,
-    numberOfPages: 0,
-    nextPage: 0,
-    prevPage: 0,
+  currentPage: 1,
+  numberOfPages: 1 ,
+  hasNextPage: false ,
+  hasPrevPage: false,
+  limit: 1 ,
+  totalDocs: 0 ,
   };
 
   filter() {
@@ -92,16 +92,10 @@ class ApiFeature {
       currentPage: page,
       limit: adjustedLimit,
       totalDocs: countDocuments,
+      hasNextPage: endIndex < countDocuments,
+      hasPrevPage: skip > 0,
       numberOfPages: Math.ceil(countDocuments / adjustedLimit),
     };
-
-    if (endIndex < countDocuments) {
-      pagination.nextPage = page + 1;
-    }
-
-    if (skip > 0) {
-      pagination.prevPage = page - 1;
-    }
 
     this.MongooseQuery = this.MongooseQuery.skip(skip).limit(adjustedLimit);
     this.paginationResult = pagination;

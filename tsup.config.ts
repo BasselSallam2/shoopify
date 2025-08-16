@@ -6,7 +6,10 @@ export default defineConfig({
   format: ["esm"],
   clean: true,
   sourcemap: true,
+  // minify: true,
+  // bundle: true,
   target: "es2022",
   splitting: false,
-  dts: true,
+  dts: false,
+   external: ['cloudinary'],
 });

@@ -1,165 +1,78 @@
 import { Model, PopulateOptions } from "mongoose";
-import  { Request, Response, NextFunction } from "express";
-import asyncHandler from "express-async-handler";
-import ApiError from "@/utils/apiError.js";
 import ApiFeature from "@/utils/apiFeatures.js";
 
-
-
-export class GenericServices {
-  model: Model<any>;
-  constructor(model: Model<any>) {
+export class GenericServices<T> {
+  model: Model<T>;
+  constructor(model: Model<T>) {
     this.model = model;
   }
 
-  static deleteById(model: Model<any>) {
-    return asyncHandler(
-      async (req: Request, res: Response, next: NextFunction) => {
-        const { id } = req.params;
-        const document = await model.findByIdAndDelete(id);
-        if (!document) {
-          next(new ApiError(404, "Document not found"));
-          return;
-        }
-        res.status(200).json({ message: "Document deleted successfully" });
-      }
-    );
+  public deleteById(id: string) {
+    return this.model.findByIdAndDelete(id);
   }
 
-  static softDeleteById(model: Model<any>) {
-    return asyncHandler(
-      async (req: Request, res: Response, next: NextFunction) => {
-        const { id } = req.params;
-        const document = await model.findByIdAndUpdate(id, { deleted: true });
-        if (!document) {
-          next(new ApiError(404, "Document not found"));
-          return;
-        }
-        res.status(200).json({ message: "Document deleted successfully" });
-      }
-    );
+  public softDeleteById(id: string) {
+    let query = this.model.findByIdAndUpdate(id, {
+      deleted: true,
+    });
+    return query;
   }
 
-  static deleteMany(model: Model<any>, fillter: any) {
-    return asyncHandler(
-      async (req: Request, res: Response, next: NextFunction) => {
-        const documents = await model.deleteMany(fillter);
-        if (!documents) {
-          next(new ApiError(404, "Documents not found"));
-          return;
-        }
-        res.status(200).json({ message: "Documents deleted successfully" });
-      }
-    );
+  public deleteMany(fillter: any) {
+    const query = this.model.deleteMany(fillter);
+    return query;
   }
 
-  static updateById(model: Model<any>) {
-    return asyncHandler(
-      async (req: Request, res: Response, next: NextFunction) => {
-        const { id } = req.params;
-        const document = await model.findByIdAndUpdate(id, req.body);
-        if (!document) {
-          next(new ApiError(404, "Document not found"));
-          return;
-        }
-        res.status(200).json({ message: "Document updated successfully" });
-      }
-    );
+  public updateById(id: string, body: any) {
+    const query = this.model.findByIdAndUpdate(id, body);
+    return query;
   }
 
-  static updateMany(model: Model<any>, fillter: any) {
-    return asyncHandler(
-      async (req: Request, res: Response, next: NextFunction) => {
-        const documents = await model.updateMany(fillter, req.body);
-        if (!documents) {
-          next(new ApiError(404, "Documents not found"));
-          return;
-        }
-        res.status(200).json({ message: "Documents updated successfully" });
-      }
-    );
+  public updateMany(filter: any, body: any) {
+    const query = this.model.updateMany(filter, body);
+    return query;
   }
 
-  static createOne(model: Model<any>) {
-    return asyncHandler(
-      async (req: Request, res: Response, next: NextFunction) => {
-        const document = await model.create(req.body);
-        res
-          .status(201)
-          .json({ message: "Document created successfully", id: document._id });
-      }
-    );
+  public createOne(body: any , ...args: any[]) {
+    const query = this.model.create(body);
+    return query;
   }
 
-  static createMany(model: Model<any>) {
-    return asyncHandler(
-      async (req: Request, res: Response, next: NextFunction) => {
-        const { body } = req;
-        if (Array.isArray(body) === false) {
-          next(new ApiError(400, "Body must be an array"));
-          return;
-        }
-        const documents = await model.create(req.body);
-        res
-          .status(201)
-          .json({
-            message: "Documents created successfully",
-            id: documents._id,
-          });
-      }
-    );
+  public createMany(body: any) {
+    return this.model.create(body);
   }
 
-  static getOne(model: Model<any>, populateOption?: PopulateOptions) {
-    return asyncHandler(
-      async (req: Request, res: Response, next: NextFunction) => {
-        const { id } = req.params;
-        let query = model.findById(id)
+  public getOne(id: string, populateOption?: PopulateOptions , sanitizeOption?: string[]) {
+    let query = this.model.findById(id);
+    if (populateOption) {
+      return (query = query.populate(populateOption));
+    }
+    if (sanitizeOption) {
+      let sanatizeStr = sanitizeOption.map(f => `-${f}`).join(" ") + " -__v";
+      return (query = query.select(sanatizeStr));
+    }
+    return query;
+  }
+
+  public async getAll  (reqQuery:any , populateOption?: PopulateOptions, sanitizeOption?: string[] , args?: any) {
+        const documentsCount = await this.model.countDocuments().cache();
+        let query = this.model.find();
         if (populateOption) {
           query = query.populate(populateOption);
         }
-        const document = await query;
-        if (!document) {
-          next(new ApiError(404, "Document not found"));
-          return;
-        }
-        res.status(200).json(document);
-      }
-    );
-  }
-
-  static getAll(model: Model<any>, populateOption?: PopulateOptions , sanitizeOption?: string[]) {
-    return asyncHandler(
-      async (req: Request, res: Response, next: NextFunction) => {
-        const documentsCount = await model.countDocuments();
-        let query = model.find()
-        if (populateOption) {
-          query = query.populate(populateOption);
-        }
-        const apiFeatures = new ApiFeature(query, req.query)
+        const { MongooseQuery, paginationResult } = new ApiFeature(
+          query,
+          reqQuery
+        )
           .filter()
           .sort()
           .sanitize(sanitizeOption)
           .select()
           .paginate(documentsCount);
 
-        const documents = await apiFeatures.MongooseQuery;
-
-        if (!documents) {
-          next(new ApiError(404, "Documents not found"));
-          return;
-        }
-        if(req.query.limit){
-          const paginationResult = apiFeatures.paginationResult ;
-           res.status(200).json({documents, paginationResult});
-           return;
-        }
-
-        res.status(200).json(documents);
-      }
-    );
+        let documents =  await MongooseQuery.lean().cache().exec();
+        return {  documents, paginationResult }; ;
   }
 }
 
-
-export default GenericServices ;
+export default GenericServices;

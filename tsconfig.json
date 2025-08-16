@@ -21,7 +21,8 @@
       "@types/*": ["types/*"],
       "@utils/*": ["utils/*"],
       "@logs/*": ["LOGS/*"],
-      "@cash/*": ["cash/*"]
+      "@cash/*": ["cash/*"],
+      "@services/*": ["services/*"]
     },
 
     "strict": true,

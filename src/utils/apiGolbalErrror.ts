@@ -9,13 +9,17 @@ export const globalErrorHandler = (
     next: NextFunction
 ) => {
     console.error(err); 
+    const t = req.t; 
+   
+ 
+  
 
     if (err.code === 11000) {
         const field = Object.keys(err.keyValue)[0] as string;
         const value = err.keyValue[field];
         return res.status(400).json({
-            status: "fail",
-            message: `${field}: ${value} is already taken`
+            status: t("errors.fail"),
+            message: `${field}: ${value} ${t("errors.taken") }`
         });
     }
 
@@ -27,7 +31,7 @@ export const globalErrorHandler = (
     }
 
     res.status(500).json({
-        status: "error",
-        message: "Something went wrong"
+        status: t("errors.error"),
+        message: t("errors.worng")
     });
 };
